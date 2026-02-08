@@ -1,27 +1,31 @@
 """
 FastAPI backend for Cloud RAG system
+Handles document upload and question answering
 """
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
+import sys
 from pathlib import Path
 import shutil
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 from rag_system import CloudRAG
 
 app = FastAPI(title="Cloud RAG API")
 
-# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
-# Global RAG instance
+# Single RAG instance to maintain state
 rag_instance = None
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)

@@ -17,6 +17,7 @@ const elements = {
 async function init() {
     console.log('🚀 Cloud RAG System Starting...');
     console.log(`📡 Backend API URL: ${API_URL}`);
+    console.log('Testing backend connection...');
     
     await updateStats();
     setupEventListeners();
@@ -74,13 +75,18 @@ async function uploadFile(file) {
 
     try {
         console.log(`Uploading to: ${API_URL}/upload`);
+        console.log(`File: ${file.name}, Size: ${file.size} bytes`);
         
         const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            mode: 'cors'
         });
 
+        console.log(`Response status: ${response.status}`);
+        
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (response.ok) {
             showStatus(`✓ ${file.name} uploaded successfully`, 'success');
@@ -90,7 +96,7 @@ async function uploadFile(file) {
         }
     } catch (error) {
         console.error('Upload error:', error);
-        showStatus(`✗ ${file.name}: Cannot connect to backend at ${API_URL}`, 'error');
+        showStatus(`✗ ${file.name}: Network error - ${error.message}. Is backend running on ${API_URL}?`, 'error');
     }
 }
 
@@ -128,7 +134,7 @@ async function handleAskQuestion() {
         }
     } catch (error) {
         removeMessage(loadingMsg);
-        addMessage(`Error: Cannot connect to backend`, 'assistant');
+        addMessage(`Error: ${error.message}`, 'assistant');
     } finally {
         elements.askBtn.disabled = false;
         elements.questionInput.disabled = false;
@@ -229,6 +235,7 @@ function disableChat() {
 // Update system statistics
 async function updateStats() {
     try {
+        console.log(`Fetching stats from: ${API_URL}/stats`);
         const response = await fetch(`${API_URL}/stats`);
         
         if (!response.ok) {
@@ -246,9 +253,10 @@ async function updateStats() {
         }
     } catch (error) {
         console.error('❌ Backend connection failed:', error);
+        console.error(`Make sure backend is running on ${API_URL}`);
         elements.docCount.textContent = '?';
         elements.modelName.textContent = 'Offline';
-        showStatus(`⚠️ Cannot connect to backend at ${API_URL}`, 'error');
+        showStatus(`⚠️ Cannot connect to backend at ${API_URL}. Make sure it's running.`, 'error');
     }
 }
 
