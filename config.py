@@ -13,7 +13,7 @@ class Config:
     # Get your token: https://huggingface.co/settings/tokens
     # Create "Fine-grained" token with "Make calls to Inference Providers" permission
     
-    HF_TOKEN: str = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or "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"
+    HF_TOKEN: str = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") 
     
     # ==================== MODEL SELECTION ====================
     # Using Kimi-K2-Instruct via Novita provider
