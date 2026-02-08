@@ -167,9 +167,15 @@ function addMessage(content, sender, sources = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}`;
     
+    // Format content: convert newlines to <br> and preserve formatting
+    const formattedContent = content
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic
+    
     let html = `
         <div class="message-label">${sender === 'user' ? 'You' : 'Assistant'}</div>
-        <div class="message-content">${content}</div>
+        <div class="message-content">${formattedContent}</div>
     `;
 
     if (sources && sources.length > 0) {
