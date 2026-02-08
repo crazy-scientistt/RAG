@@ -1,12 +1,22 @@
 [build]
-  # Tell Netlify where the project starts
+  # Navigate to the frontend folder first
   base = "frontend"
-  # '.' means the current folder (frontend/) is the one to publish
+  # '.' means publish the current 'base' directory itself
   publish = "."
   command = "echo 'No build needed - static site'"
 
+[functions]
+  # Since we are inside 'frontend', we go UP one level to find the functions
+  directory = "../my_functions"
+
 [[redirects]]
-  # Single Page App (SPA) redirect
+  # Redirect /api/chat to your serverless function
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  # Standard redirect for Single Page Apps
   from = "/*"
   to = "/index.html"
   status = 200
