@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #0a0e15;
+            color: #fff;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+        .info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        h1 { color: #3b82f6; }
+        h2 { color: #60a5fa; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Backend Connection Test</h1>
+    <p>This page tests connectivity to your Cloud RAG backend.</p>
+    
+    <div class="test-result info">
+        <strong>Testing API URL:</strong> <span id="apiUrl"></span>
+    </div>
+    
+    <button onclick="testConnection()">Run Tests</button>
+    <button onclick="location.href='index.html'">Back to App</button>
+    
+    <div id="results"></div>
+
+    <h2>📋 Troubleshooting Guide</h2>
+    <div class="test-result info">
+        <strong>If tests fail:</strong><br><br>
+        1. Make sure backend is running: <code>cd backend && python app.py</code><br>
+        2. Check backend is on port 8000: <code>http://localhost:8000</code><br>
+        3. Verify HF_TOKEN is set in .env file<br>
+        4. Check browser console (F12) for CORS errors<br>
+        5. Try restarting both frontend and backend
+    </div>
+
+    <script>
+        const API_URL = (window.FRONTEND_CONFIG && window.FRONTEND_CONFIG.API_URL) 
+            || (window.ENV_API_URL) 
+            || 'http://localhost:8000';
+
+        document.getElementById('apiUrl').textContent = API_URL;
+
+        async function testConnection() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Running Tests...</h2>';
+
+            // Test 1: Root endpoint
+            await runTest('Test 1: Backend Health Check', `${API_URL}/`, async () => {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                return {
+                    success: response.ok,
+                    message: `Status: ${response.status}, Message: ${data.message || 'OK'}`,
+                    data: data
+                };
+            });
+
+            // Test 2: Stats endpoint
+            await runTest('Test 2: Stats Endpoint', `${API_URL}/stats`, async () => {
+                const response = await fetch(`${API_URL}/stats`);
+                const data = await response.json();
+                return {
+                    success: response.ok,
+                    message: `Model: ${data.model}, Documents: ${data.documents}`,
+                    data: data
+                };
+            });
+
+            // Test 3: CORS preflight
+            await runTest('Test 3: CORS Check', `${API_URL}/stats`, async () => {
+                const response = await fetch(`${API_URL}/stats`, {
+                    method: 'OPTIONS'
+                });
+                return {
+                    success: true,
+                    message: `CORS headers present: ${response.headers.get('access-control-allow-origin') ? 'Yes' : 'No'}`,
+                    data: null
+                };
+            });
+
+            results.innerHTML += '<div class="test-result success"><strong>✅ All tests complete!</strong><br>Check results above.</div>';
+        }
+
+        async function runTest(name, url, testFn) {
+            const results = document.getElementById('results');
+            const testDiv = document.createElement('div');
+            testDiv.innerHTML = `<h3>${name}</h3><p>Testing ${url}...</p>`;
+            results.appendChild(testDiv);
+
+            try {
+                const result = await testFn();
+                testDiv.className = `test-result ${result.success ? 'success' : 'error'}`;
+                testDiv.innerHTML = `
+                    <h3>${result.success ? '✅' : '❌'} ${name}</h3>
+                    <p><strong>URL:</strong> ${url}</p>
+                    <p><strong>Result:</strong> ${result.message}</p>
+                    ${result.data ? `<pre>${JSON.stringify(result.data, null, 2)}</pre>` : ''}
+                `;
+            } catch (error) {
+                testDiv.className = 'test-result error';
+                testDiv.innerHTML = `
+                    <h3>❌ ${name}</h3>
+                    <p><strong>URL:</strong> ${url}</p>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Type:</strong> ${error.name}</p>
+                    <p>This usually means the backend is not running or not accessible.</p>
+                `;
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 500);
+        });
+    </script>
+</body>
+</html>
