@@ -1,8 +1,12 @@
 [build]
-  publish = "frontend"
+  # Tell Netlify where the project starts
+  base = "frontend"
+  # '.' means the current folder (frontend/) is the one to publish
+  publish = "."
   command = "echo 'No build needed - static site'"
 
 [[redirects]]
+  # Single Page App (SPA) redirect
   from = "/*"
   to = "/index.html"
   status = 200
