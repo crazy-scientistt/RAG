@@ -126,7 +126,14 @@ class CloudRAG:
         ])
         
         # Build prompt
-        prompt = f"""Based on the following context, answer the question. If the answer is not in the context, say so.
+        prompt = f"""Based on the following context, answer the question in a clear, well-structured format.
+
+Instructions:
+- Use bullet points or numbered lists when listing multiple items
+- Use paragraphs to separate different topics
+- Use line breaks for better readability
+- Be concise but complete
+- If the answer is not in the context, say so
 
 Context:
 {context}
